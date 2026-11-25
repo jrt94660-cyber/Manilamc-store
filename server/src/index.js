@@ -21,7 +21,10 @@ app.use(rateLimit({ windowMs: 60_000, limit: 60, standardHeaders: "draft-7", leg
 function adminOnly(req, res, next) {
   const token = req.get("authorization")?.replace(/^Bearer\s+/i, "");
   const expected = process.env.ADMIN_TOKEN;
-  if (!expected || !token || !crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expected))) return res.status(401).json({ error: "Unauthorized" });
+  if (!expected || !token) return res.status(401).json({ error: "Unauthorized" });
+  const supplied = Buffer.from(token);
+  const configured = Buffer.from(expected);
+  if (supplied.length !== configured.length || !crypto.timingSafeEqual(supplied, configured)) return res.status(401).json({ error: "Unauthorized" });
   next();
 }
 function validUsername(name) { return typeof name === "string" && /^[A-Za-z0-9_]{3,16}$/.test(name); }
