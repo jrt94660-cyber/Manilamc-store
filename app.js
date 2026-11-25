@@ -64,7 +64,10 @@
       if (data.checkoutUrl) { window.location.assign(data.checkoutUrl); return; }
       let reference = "";
       if (data.manualPayment) {
-        alert("Order " + data.orderId + " created. Pay using the official ManilaMC payment instructions provided by staff. Do not pay an unverified account.");
+        const infoResponse = await fetch(apiBase + "/api/payment-instructions?method=" + encodeURIComponent(paymentMethod));
+        const info = await infoResponse.json();
+        const receiver = [info.receiverName, info.receiverNumber].filter(Boolean).join(" · ");
+        alert("Order " + data.orderId + " created.\\n" + (receiver ? info.method + " payment to: " + receiver + "\\n" : "") + (info.instructions || "Follow the verified ManilaMC payment instructions.") + "\\nAmount: " + peso(data.totalPHP) + "\\nDo not pay if these details are not the official ManilaMC account.");
         reference = prompt("After sending payment, enter the GCash/Maya transaction reference. Leave blank to submit it later.");
         if (reference && reference.trim()) {
           const refResponse = await fetch(apiBase + "/api/orders/" + encodeURIComponent(data.orderId) + "/manual-reference", {
