@@ -79,6 +79,19 @@ async function deliverOrder(orderId) {
 
 app.get("/health", (_req, res) => res.json({ ok: true, service: "manilamc-store-api" }));
 app.get("/api/products", (_req, res) => res.json(Object.entries(PRODUCTS).map(([id, p]) => ({ id, ...p }))));
+app.get("/api/payment-instructions", (req, res) => {
+  const method = String(req.query.method || "");
+  const isGcash = method === "manual-gcash";
+  const isMaya = method === "manual-maya";
+  if (!isGcash && !isMaya) return res.status(400).json({ error: "Unsupported manual payment method." });
+  const prefix = isGcash ? "GCASH" : "MAYA";
+  res.json({
+    method: isGcash ? "GCash" : "Maya",
+    receiverName: process.env[prefix + "_RECEIVER_NAME"] || "",
+    receiverNumber: process.env[prefix + "_RECEIVER_NUMBER"] || "",
+    instructions: process.env[prefix + "_PAYMENT_INSTRUCTIONS"] || "Ask ManilaMC staff for the verified payment details before sending money."
+  });
+});
 
 app.post("/api/orders", express.json({ limit: "32kb" }), async (req, res) => {
   try {
