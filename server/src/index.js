@@ -106,13 +106,15 @@ app.post("/api/orders", express.json({ limit: "32kb" }), async (req, res) => {
 
     const secret = process.env.PAYMONGO_SECRET_KEY;
     if (!secret) return res.status(503).json({ error: "Online payment is not configured yet.", orderId: id });
+    const successUrl = new URL(process.env.PAYMONGO_SUCCESS_URL);
+    successUrl.searchParams.set("order_id", id);
     const response = await fetch("https://api.paymongo.com/v2/checkout_sessions", {
       method: "POST",
       headers: { Authorization: "Basic " + Buffer.from(secret + ":").toString("base64"), "Content-Type": "application/json" },
       body: JSON.stringify({ data: { attributes: {
         line_items: cleanItems.map(i => ({ name: i.name, amount: pesoToCentavos(i.unitPrice), currency: "PHP", quantity: i.quantity })),
         payment_method_types: [paymentMethod === "gcash" ? "gcash" : "paymaya"],
-        success_url: process.env.PAYMONGO_SUCCESS_URL,
+        success_url: successUrl.toString(),
         cancel_url: process.env.PAYMONGO_CANCEL_URL,
         reference_number: id,
         metadata: { order_id: id, minecraft_username: username }
@@ -127,6 +129,12 @@ app.post("/api/orders", express.json({ limit: "32kb" }), async (req, res) => {
     console.error("Order creation failed:", e);
     res.status(500).json({ error: "Could not create order. Please try again." });
   }
+});
+
+app.get("/api/orders/:id", async (req, res) => {
+  const result = await pool.query("SELECT id, payment_status, delivery_status, created_at FROM orders WHERE id=$1", [req.params.id]);
+  if (!result.rowCount) return res.status(404).json({ error: "Order not found." });
+  res.json(result.rows[0]);
 });
 
 app.post("/api/orders/:id/manual-reference", express.json({ limit: "8kb" }), async (req, res) => {
