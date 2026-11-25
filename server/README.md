@@ -19,7 +19,7 @@ PayMongo's hosted checkout uses a backend-created Checkout Session. The backend 
 
 ## Minecraft reward delivery
 
-Enable RCON in the server configuration only if your host supports it. Restrict RCON access to the API host/IP using the host firewall; do not expose the RCON port publicly. Set `RCON_HOST`, `RCON_PORT`, and `RCON_PASSWORD` as backend secrets.
+Enable RCON in the server configuration only if your host supports it. Restrict RCON access to the API host/IP using the host firewall; do not expose the RCON port publicly. Set `RCON_HOST`, `RCON_PORT`, and `RCON_PASSWORD` as backend secrets. Configure `GCASH_RECEIVER_NAME`, `GCASH_RECEIVER_NUMBER`, `MAYA_RECEIVER_NAME`, and `MAYA_RECEIVER_NUMBER` as environment variables if you want the manual transfer details shown during checkout.
 
 Default rank command:
 `lp user {player} parent set {rank}`
@@ -29,7 +29,7 @@ Set `KEY_COMMAND_TEMPLATE` to the exact command syntax from the crate-key plugin
 
 Do not assume that example is correct for your server. Test commands manually in console first. The backend does not run rewards until payment is confirmed or a staff member approves a manual order.
 
-## Manual GCash/Maya
+## Staff order panel\n\nOpen the deployed `admin.html`, enter the backend HTTPS URL and the `ADMIN_TOKEN` value, then connect. The panel lists orders, allows staff to approve manual payments with submitted references, and retry failed reward deliveries. Do not share the admin token.\n\n## Manual GCash/Maya
 
 Select `manual-gcash` or `manual-maya` when creating an order. The customer submits the transaction reference to `POST /api/orders/:id/manual-reference`. Staff review orders through `GET /admin/orders` and approve with `POST /admin/orders/:id/approve`. Both admin routes require `Authorization: Bearer ADMIN_TOKEN`.
 
