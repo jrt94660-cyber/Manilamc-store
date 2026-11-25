@@ -110,6 +110,8 @@ app.post("/api/orders", express.json({ limit: "32kb" }), async (req, res) => {
     }
     const id = makeOrderId();
     const manual = paymentMethod.startsWith("manual-");
+    if (!manual && !process.env.PAYMONGO_SECRET_KEY) return res.status(503).json({ error: "Online payment is not configured yet." });
+    if (!manual && !process.env.PAYMONGO_SUCCESS_URL) return res.status(503).json({ error: "Payment return URL is not configured yet." });
     const method = paymentMethod.endsWith("gcash") ? "GCash" : "Maya";
     await pool.query(
       "INSERT INTO orders (id,username,items,total_php,payment_method,payment_status) VALUES ($1,$2,$3,$4,$5,'pending')",
