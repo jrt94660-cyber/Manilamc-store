@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080d18">
+  <meta name="description" content="The official ManilaMC in-game store. Browse ranks, keys and items.">
+  <title>ManilaMC Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div class="announcement"><span class="pulse"></span> MANILAMC STORE <span class="announcement-muted">· Secure checkout setup in progress</span></div>
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="ManilaMC Store home"><span class="brand-mark">M</span><span>MANILA<span class="brand-blue">MC</span><small>OFFICIAL STORE</small></span></a>
+    <nav><a href="#store">Store</a><a href="#how">How to buy</a><a href="#help">Support</a></nav>
+    <button class="cart-button" id="open-cart" aria-label="Open cart">Cart <span id="cart-count">0</span></button>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><span></span> THE OFFICIAL MANILAMC STORE</div>
+        <h1>UPGRADE YOUR<br><span>ADVENTURE.</span></h1>
+        <p>Unlock perks, collect rewards, and make your mark on ManilaMC.</p>
+        <div class="hero-actions"><a class="primary-button" href="#store">Explore store <span>↗</span></a><div class="server-status"><i></i><span>MANILAMC<br><b>IN-GAME STORE</b></span></div></div>
+      </div>
+      <div class="hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="cube cube-back"></div><div class="cube cube-front"><div class="cube-face">M</div></div><div class="art-label">PLAY<br><b>YOUR WAY</b></div></div>
+      <div class="hero-bottom"><span>BUILT FOR THE COMMUNITY</span><span>PHILIPPINES&nbsp; / &nbsp;₱ PHP</span></div>
+    </section>
+    <section class="trust-strip"><div><b>₱ PHP</b><span>Local pricing</span></div><div><b>GCASH + MAYA</b><span>Payment options planned</span></div><div><b>IN-GAME</b><span>Digital rewards</span></div></section>
+    <section class="store-section" id="store">
+      <div class="section-heading"><div><div class="eyebrow">THE COLLECTION</div><h2>THE <span>STORE.</span></h2><p>Choose your next upgrade.</p></div><div class="category-tabs" id="category-tabs"><button class="active" data-category="All">All items</button><button data-category="Ranks">Ranks</button><button data-category="Keys">Keys</button><button data-category="Items">Items</button></div></div>
+      <div class="product-grid" id="product-grid"></div>
+      <div class="empty-state" id="empty-state" hidden>No products in this category yet.</div>
+    </section>
+    <section class="how-section" id="how"><div class="eyebrow">SIMPLE & STRAIGHTFORWARD</div><h2>HOW TO <span>BUY.</span></h2><div class="steps"><article><span>01</span><h3>Choose your item</h3><p>Browse the store and add the rewards you want to your cart.</p></article><article><span>02</span><h3>Enter your username</h3><p>Double-check your exact Minecraft username before ordering.</p></article><article><span>03</span><h3>Complete payment</h3><p>Follow the configured payment instructions. Staff verify manual orders before delivery.</p></article></div></section>
+    <section class="support-section" id="help"><div><div class="eyebrow">NEED A HAND?</div><h2>WE'VE GOT <span>YOU.</span></h2><p>For purchase questions or missing rewards, contact the ManilaMC staff team.</p></div><a class="outline-button" id="support-link" href="#" target="_blank" rel="noopener">Visit support <span>↗</span></a></section>
+  </main>
+  <footer><a class="brand footer-brand" href="#"><span class="brand-mark">M</span><span>MANILA<span class="brand-blue">MC</span><small>OFFICIAL STORE</small></span></a><span>© <span id="year"></span> ManilaMC. All rights reserved.</span><span>NOT AN OFFICIAL MINECRAFT PRODUCT.</span></footer>
+  <div class="overlay" id="overlay" hidden></div>
+  <aside class="drawer" id="cart-drawer" aria-label="Shopping cart" aria-hidden="true"><div class="drawer-head"><div><div class="eyebrow">YOUR SELECTION</div><h2>YOUR CART</h2></div><button class="icon-button" id="close-cart" aria-label="Close cart">×</button></div><div class="cart-items" id="cart-items"></div><div class="cart-footer"><div class="total-row"><span>Subtotal</span><b id="cart-total">₱0</b></div><button class="primary-button full-button" id="checkout-button">Continue to checkout <span>→</span></button><p>Digital products are delivered in-game after payment verification.</p></div></aside>
+  <section class="checkout-modal" id="checkout-modal" hidden role="dialog" aria-modal="true" aria-labelledby="checkout-title"><div class="modal-head"><div><div class="eyebrow">ALMOST THERE</div><h2 id="checkout-title">CHECKOUT</h2></div><button class="icon-button" id="close-checkout" aria-label="Close checkout">×</button></div><p class="modal-note">Checkout is being connected to the ManilaMC order system. No payment will be taken on this demo storefront.</p><form id="checkout-form"><label>Minecraft username<input id="player-name" name="username" required minlength="3" maxlength="16" pattern="[A-Za-z0-9_]+" placeholder="Your exact in-game name"></label><label>Payment method<select id="payment-method" name="payment" required><option value="">Select payment method</option><option value="GCash">GCash</option><option value="Maya">Maya</option></select></label><div class="checkout-summary"><span>Order total</span><b id="checkout-total">₱0</b></div><button class="primary-button full-button" type="submit">Prepare order request <span>→</span></button><p class="form-footnote">This creates an order summary for you to share with staff. It does not verify payment or deliver items.</p></form><div class="order-result" id="order-result" hidden><div class="success-mark">✓</div><h3>ORDER SUMMARY READY</h3><p id="order-summary-text"></p><button class="primary-button full-button" id="copy-order">Copy order details</button><button class="text-button" id="done-order">Done</button></div></section>
+</body>
+</html>
