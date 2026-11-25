@@ -6,7 +6,7 @@
   const apiBase = String(config.apiBaseUrl || "").replace(/\/$/, "");
   let cart = [];
   let activeCategory = "All";
-  let preparedOrder = "";
+  let preparedOrder = "";\n  let manualReferenceOrderId = "";
 
   $("year").textContent = new Date().getFullYear();
   if (config.supportUrl) $("support-link").href = config.supportUrl;
@@ -62,20 +62,17 @@
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not create order.");
       if (data.checkoutUrl) { window.location.assign(data.checkoutUrl); return; }
-      let reference = "";
       if (data.manualPayment) {
+        manualReferenceOrderId = data.orderId;
         const infoResponse = await fetch(apiBase + "/api/payment-instructions?method=" + encodeURIComponent(paymentMethod));
         const info = await infoResponse.json();
         const receiver = [info.receiverName, info.receiverNumber].filter(Boolean).join(" · ");
         alert("Order " + data.orderId + " created.\\n" + (receiver ? info.method + " payment to: " + receiver + "\\n" : "") + (info.instructions || "Follow the verified ManilaMC payment instructions.") + "\\nAmount: " + peso(data.totalPHP) + "\\nDo not pay if these details are not the official ManilaMC account.");
-        reference = prompt("After sending payment, enter the GCash/Maya transaction reference. Leave blank to submit it later.");
-        if (reference && reference.trim()) {
-          const refResponse = await fetch(apiBase + "/api/orders/" + encodeURIComponent(data.orderId) + "/manual-reference", {
-            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reference: reference.trim() })
-          });
-          const refData = await refResponse.json();
-          if (!refResponse.ok) throw new Error(refData.error || "Could not submit payment reference.");
-        }
+        $("manual-reference-box").hidden = false;
+        $("manual-reference-status").textContent = "After payment, enter the transaction reference for order " + data.orderId + ".";
+      } else {
+        $("manual-reference-box").hidden = true;
+        manualReferenceOrderId = "";
       }
       preparedOrder = `MANILAMC STORE ORDER\nOrder ID: ${data.orderId}\nMinecraft username: ${username}\nPayment: ${paymentMethod}\nItems:\n${cart.map(i => `- ${i.name} x${i.qty}`).join("\n")}\nTotal: ${peso(data.totalPHP)}\nStatus: PENDING — staff verification required.`;
       $("order-summary-text").textContent = "Order " + data.orderId + " created for " + username + ". Total: " + peso(data.totalPHP) + ". Status: pending payment verification. Keep your order ID.";
@@ -83,6 +80,22 @@
       $("order-result").hidden = false;
     } catch (error) { alert(error.message || "Checkout failed. Please try again."); }
     finally { submit.disabled = false; }
+  });
+  $("submit-manual-reference").addEventListener("click", async () => {
+    const reference = $("manual-reference").value.trim();
+    if (!manualReferenceOrderId || !reference) { alert("Enter the transaction reference first."); return; }
+    const button = $("submit-manual-reference");
+    button.disabled = true;
+    try {
+      const response = await fetch(apiBase + "/api/orders/" + encodeURIComponent(manualReferenceOrderId) + "/manual-reference", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reference })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not submit reference.");
+      $("manual-reference-status").textContent = "Reference submitted. Staff will verify the payment before delivering your rewards.";
+      $("manual-reference").disabled = true;
+    } catch (error) { alert(error.message); }
+    finally { button.disabled = false; }
   });
   $("copy-order").addEventListener("click", async () => { try { await navigator.clipboard.writeText(preparedOrder); $("copy-order").textContent = "Copied!"; } catch { const area = document.createElement("textarea"); area.value = preparedOrder; document.body.append(area); area.select(); document.execCommand("copy"); area.remove(); $("copy-order").textContent = "Copied!"; } });
   $("done-order").addEventListener("click", () => { $("checkout-modal").hidden = true; cart = []; renderCart(); });
