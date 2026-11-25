@@ -67,7 +67,7 @@
         const infoResponse = await fetch(apiBase + "/api/payment-instructions?method=" + encodeURIComponent(paymentMethod));
         const info = await infoResponse.json();
         const receiver = [info.receiverName, info.receiverNumber].filter(Boolean).join(" · ");
-        alert("Order " + data.orderId + " created.\\n" + (receiver ? info.method + " payment to: " + receiver + "\\n" : "") + (info.instructions || "Follow the verified ManilaMC payment instructions.") + "\\nAmount: " + peso(data.totalPHP) + "\\nDo not pay if these details are not the official ManilaMC account.");
+        alert("Order " + data.orderId + " created.\n" + (receiver ? info.method + " payment to: " + receiver + "\n" : "") + (info.instructions || "Follow the verified ManilaMC payment instructions.") + "\nAmount: " + peso(data.totalPHP) + "\nDo not pay if these details are not the official ManilaMC account.");
         $("manual-reference-box").hidden = false;
         $("manual-reference-status").textContent = "After payment, enter the transaction reference for order " + data.orderId + ".";
       } else {
