@@ -1,22 +1,21 @@
-/* ManilaMC Store settings. Replace placeholders with your real details before launch. */
+/* Public storefront settings only. Never put private credentials here. */
 window.STORE_CONFIG = {
   serverName: "ManilaMC",
   currency: "PHP",
   locale: "en-PH",
   supportUrl: "",
-  /* Keep payment account details private until you are ready to publish them. */
-  payment: {
-    gcash: { enabled: false, displayName: "GCash", instructions: "GCash instructions will appear here after configuration." },
-    maya: { enabled: false, displayName: "Maya", instructions: "Maya instructions will appear here after configuration." }
-  },
-  /* Set this only after deploying a secure backend. Never put secret API keys here. */
   apiBaseUrl: "",
   products: [
-    { id: "rank-vip", name: "VIP Rank", category: "Ranks", price: 149, description: "A starter upgrade with exclusive server perks.", icon: "✦", tag: "POPULAR", enabled: true },
-    { id: "rank-elite", name: "Elite Rank", category: "Ranks", price: 299, description: "More perks for players ready to stand out.", icon: "⬡", tag: "", enabled: true },
-    { id: "rank-legend", name: "Legend Rank", category: "Ranks", price: 499, description: "A premium rank for dedicated members.", icon: "♛", tag: "BEST VALUE", enabled: true },
-    { id: "key-basic", name: "Basic Crate Key", category: "Keys", price: 25, description: "Open a crate and try your luck at rewards.", icon: "⚿", tag: "", enabled: true },
-    { id: "key-rare", name: "Rare Crate Key", category: "Keys", price: 59, description: "A key for a higher-tier crate.", icon: "⚿", tag: "", enabled: true },
-    { id: "item-coins", name: "Coin Bundle", category: "Items", price: 99, description: "An in-game currency bundle.", icon: "◈", tag: "", enabled: true }
+    { id: "rank-lime", name: "Lime Rank", category: "Ranks", price: 45, description: "Permanent rank. Includes Booster and Lime kits; /craft, /trash and /ec.", icon: "✦", tag: "", enabled: true },
+    { id: "rank-mango", name: "Mango Rank", category: "Ranks", price: 75, description: "Permanent rank. Includes Booster, Lime and Mango kits; adds /anvil.", icon: "✦", tag: "", enabled: true },
+    { id: "rank-coconut", name: "Coconut Rank", category: "Ranks", price: 100, description: "Permanent rank. Includes kits through Coconut; adds /grindstone and /sign.", icon: "✦", tag: "", enabled: true },
+    { id: "rank-wave", name: "Wave Rank", category: "Ranks", price: 125, description: "Permanent rank. Includes kits through Wave; adds /loom.", icon: "✦", tag: "POPULAR", enabled: true },
+    { id: "rank-cherry", name: "Cherry Rank", category: "Ranks", price: 150, description: "Permanent rank. Includes kits through Cherry; adds /stonecutter and /smithingtable.", icon: "✦", tag: "", enabled: true },
+    { id: "rank-berry", name: "Berry Rank", category: "Ranks", price: 200, description: "Permanent rank. Includes all previous kits plus Berry; adds /flytoggle.", icon: "✦", tag: "TOP RANK", enabled: true },
+    { id: "key-keyall", name: "Keyall Key", category: "Keys", price: 15, description: "One Keyall crate key.", icon: "⚿", tag: "", enabled: true },
+    { id: "key-palm", name: "Palm Key", category: "Keys", price: 20, description: "One Palm crate key.", icon: "⚿", tag: "", enabled: true },
+    { id: "key-coral", name: "Coral Key", category: "Keys", price: 25, description: "One Coral crate key.", icon: "⚿", tag: "", enabled: true },
+    { id: "key-shell", name: "Shell Key", category: "Keys", price: 30, description: "One Shell crate key.", icon: "⚿", tag: "", enabled: true },
+    { id: "key-tropical", name: "Tropical Key", category: "Keys", price: 35, description: "One Tropical crate key.", icon: "⚿", tag: "", enabled: true }
   ]
 };
