@@ -3,6 +3,7 @@
   const products = (config.products || []).filter(p => p.enabled);
   const peso = value => new Intl.NumberFormat(config.locale || "en-PH", { style: "currency", currency: config.currency || "PHP", maximumFractionDigits: 0 }).format(value).replace("PHP", "₱");
   const $ = id => document.getElementById(id);
+  const apiBase = String(config.apiBaseUrl || "").replace(/\/$/, "");
   let cart = [];
   let activeCategory = "All";
   let preparedOrder = "";
@@ -11,6 +12,7 @@
   if (config.supportUrl) $("support-link").href = config.supportUrl;
   else $("support-link").addEventListener("click", e => { e.preventDefault(); alert("ManilaMC support link has not been configured yet."); });
 
+  function escapeHtml(value) { return String(value).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c])); }
   function renderProducts() {
     const shown = products.filter(p => activeCategory === "All" || p.category === activeCategory);
     $("product-grid").innerHTML = shown.map(p => `
@@ -20,11 +22,9 @@
       </article>`).join("");
     $("empty-state").hidden = shown.length > 0;
   }
-  function escapeHtml(value) { return String(value).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c])); }
   function total() { return cart.reduce((sum, item) => sum + item.price * item.qty, 0); }
   function renderCart() {
-    const count = cart.reduce((sum, item) => sum + item.qty, 0);
-    $("cart-count").textContent = count;
+    $("cart-count").textContent = cart.reduce((sum, item) => sum + item.qty, 0);
     $("cart-total").textContent = peso(total());
     $("checkout-total").textContent = peso(total());
     $("cart-items").innerHTML = cart.length ? cart.map(item => `<div class="cart-line"><div class="mini-icon">${item.icon || "✦"}</div><div class="cart-line-info"><b>${escapeHtml(item.name)}</b><span>${peso(item.price)} each</span><div class="quantity"><button data-qty="${item.id}" data-change="-1">−</button><span>${item.qty}</span><button data-qty="${item.id}" data-change="1">+</button></div></div><b>${peso(item.price * item.qty)}</b></div>`).join("") : '<div class="cart-empty"><span>＋</span><h3>Your cart is empty</h3><p>Add something from the store to get started.</p></div>';
@@ -45,16 +45,41 @@
   $("overlay").addEventListener("click", closeCart);
   $("checkout-button").addEventListener("click", () => { closeCart(); $("checkout-modal").hidden = false; $("order-result").hidden = true; $("checkout-form").hidden = false; $("checkout-total").textContent = peso(total()); });
   $("close-checkout").addEventListener("click", () => $("checkout-modal").hidden = true);
-  $("checkout-form").addEventListener("submit", e => {
+
+  $("checkout-form").addEventListener("submit", async e => {
     e.preventDefault();
     if (!cart.length) return;
+    if (!apiBase) { alert("The ManilaMC order system is not connected yet. Please try again after the store backend has been deployed."); return; }
+    const submit = $("checkout-form").querySelector('button[type="submit"]');
+    submit.disabled = true;
     const username = $("player-name").value.trim();
-    const payment = $("payment-method").value;
-    const lines = cart.map(i => `- ${i.name} x${i.qty}: ${peso(i.price * i.qty)}`).join("\n");
-    preparedOrder = `MANILAMC STORE ORDER REQUEST\nMinecraft username: ${username}\nPayment method: ${payment}\n\nItems:\n${lines}\n\nTotal: ${peso(total())}\n\nStatus: UNPAID — awaiting staff instructions and payment verification.\nThis is an order request only; no payment has been processed.`;
-    $("order-summary-text").textContent = `Order for ${username} · ${payment} · Total ${peso(total())}. Copy the details and send them to ManilaMC staff. Do not send payment until staff provide verified payment instructions.`;
-    $("checkout-form").hidden = true;
-    $("order-result").hidden = false;
+    const paymentMethod = $("payment-method").value;
+    try {
+      const response = await fetch(apiBase + "/api/orders", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, paymentMethod, items: cart.map(i => ({ id: i.id, quantity: i.qty })) })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not create order.");
+      if (data.checkoutUrl) { window.location.assign(data.checkoutUrl); return; }
+      let reference = "";
+      if (data.manualPayment) {
+        alert("Order " + data.orderId + " created. Pay using the official ManilaMC payment instructions provided by staff. Do not pay an unverified account.");
+        reference = prompt("After sending payment, enter the GCash/Maya transaction reference. Leave blank to submit it later.");
+        if (reference && reference.trim()) {
+          const refResponse = await fetch(apiBase + "/api/orders/" + encodeURIComponent(data.orderId) + "/manual-reference", {
+            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reference: reference.trim() })
+          });
+          const refData = await refResponse.json();
+          if (!refResponse.ok) throw new Error(refData.error || "Could not submit payment reference.");
+        }
+      }
+      preparedOrder = `MANILAMC STORE ORDER\nOrder ID: ${data.orderId}\nMinecraft username: ${username}\nPayment: ${paymentMethod}\nItems:\n${cart.map(i => `- ${i.name} x${i.qty}`).join("\n")}\nTotal: ${peso(data.totalPHP)}\nStatus: PENDING — staff verification required.`;
+      $("order-summary-text").textContent = "Order " + data.orderId + " created for " + username + ". Total: " + peso(data.totalPHP) + ". Status: pending payment verification. Keep your order ID.";
+      $("checkout-form").hidden = true;
+      $("order-result").hidden = false;
+    } catch (error) { alert(error.message || "Checkout failed. Please try again."); }
+    finally { submit.disabled = false; }
   });
   $("copy-order").addEventListener("click", async () => { try { await navigator.clipboard.writeText(preparedOrder); $("copy-order").textContent = "Copied!"; } catch { const area = document.createElement("textarea"); area.value = preparedOrder; document.body.append(area); area.select(); document.execCommand("copy"); area.remove(); $("copy-order").textContent = "Copied!"; } });
   $("done-order").addEventListener("click", () => { $("checkout-modal").hidden = true; cart = []; renderCart(); });
